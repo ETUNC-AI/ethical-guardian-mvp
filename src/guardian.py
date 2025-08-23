@@ -6,12 +6,12 @@ import importlib.util
 class EthicalGuardian:
     def __init__(self, adapter_path, config_path, prompt_path):
         self.version = "1.1-stable"
-
+        
         # Load config from file
         with open(config_path, 'r') as f:
             config = json.load(f)
         model_id = config["model_id"]
-
+        
         # Dynamically load prompt function from file
         spec = importlib.util.spec_from_file_location("prompts", prompt_path)
         prompts_module = importlib.util.module_from_spec(spec)
@@ -22,7 +22,7 @@ class EthicalGuardian:
         self.generator = pipeline(
             "text-generation",
             model=model_id,
-            torch_dtype=torch.brotli,
+            torch_dtype=torch.bfloat16,
             device_map="auto"
         )
         print("Pipeline initialized.")
@@ -30,7 +30,7 @@ class EthicalGuardian:
     def evaluate(self, test_case: dict) -> dict:
         prompt = self.get_prompt_template(test_case)
         raw_output = self.generator(prompt, max_new_tokens=256)
-
+        
         try:
             model_response_str = raw_output[0]['generated_text'].split('```json')[-1].strip()
             if model_response_str.endswith("```"):
