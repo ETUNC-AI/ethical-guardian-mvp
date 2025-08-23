@@ -5,7 +5,7 @@ import importlib.util
 
 class EthicalGuardian:
     def __init__(self, adapter_path, config_path, prompt_path):
-        self.version = "1.1-stable"
+        self.version = "1.2-stable"
         
         # Load config from file
         with open(config_path, 'r') as f:
@@ -22,7 +22,6 @@ class EthicalGuardian:
         self.generator = pipeline(
             "text-generation",
             model=model_id,
-            torch_dtype=torch.bfloat16,
             device_map="auto"
         )
         print("Pipeline initialized.")
