@@ -6,4 +6,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY src/ /app/src
 COPY config.json /app/config.json
 COPY prompts.py /app/prompts.py
-EXPOSE 8000CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]
