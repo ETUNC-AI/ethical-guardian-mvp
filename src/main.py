@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from src.guardian import EthicalGuardian # Corrected import
+from src.guardian import EthicalGuardian
 
 app = FastAPI(title="Ethical Guardian API")
 guardian_model = None
@@ -15,7 +15,6 @@ class ChatResponse(BaseModel):
 def load_model():
     global guardian_model
     print("Loading Ethical Guardian v1.0...")
-    # The model will now be loaded with paths relative to the WORKDIR
     guardian_model = EthicalGuardian(
         adapter_path="./models/guardian_v1_adapter",
         config_path="config.json",
