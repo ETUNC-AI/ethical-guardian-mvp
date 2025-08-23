@@ -1,11 +1,11 @@
-# docker-compose.yml
 version: '3.8'
 services:
   guardian:
-    # These keys must all be at the same indentation level
     build: .
     volumes:
       - ./src:/app/src
     ports:
       - "8000:8000"
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000
