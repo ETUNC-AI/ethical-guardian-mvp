@@ -26,18 +26,23 @@ class EthicalGuardian:
         )
         print("Pipeline initialized.")
 
-    def evaluate(self, test_case: dict) -> dict:
-        prompt = self.get_prompt_template(test_case)
-        raw_output = self.generator(prompt, max_new_tokens=256)
-        
-        try:
-            model_response_str = raw_output[0]['generated_text'].split('```json')[-1].strip()
-            if model_response_str.endswith("```"):
-                model_response_str = model_response_str[:-3].strip()
-            parsed_json = json.loads(model_response_str)
-            return parsed_json
-        except Exception as e:
-            return {
-                "reasoning_trace": ["FATAL_PARSING_ERROR"],
-                "guardian_output": f"Model failed to produce valid JSON. Error: {e}. Raw: {raw_output[0]['generated_text']}"
-            }
+def evaluate(self, test_case: dict) -> dict:
+    prompt = self.get_prompt_template(test_case)
+    raw_output = self.generator(
+        prompt,
+        max_new_tokens=350,      # Increased token limit
+        do_sample=True,
+        temperature=0.7          # Increased temperature for creativity
+    )
+
+    try:
+        model_response_str = raw_output[0]['generated_text'].split('```json')[-1].strip()
+        if model_response_str.endswith("```"):
+            model_response_str = model_response_str[:-3].strip()
+        parsed_json = json.loads(model_response_str)
+        return parsed_json
+    except Exception as e:
+        return {
+            "reasoning_trace": ["FATAL_PARSING_ERROR"],
+            "guardian_output": f"Model failed to produce valid JSON. Error: {e}. Raw: {raw_output[0]['generated_text']}"
+        }
