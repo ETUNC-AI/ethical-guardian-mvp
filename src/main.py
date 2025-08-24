@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware # Import the CORS middleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
@@ -21,7 +22,17 @@ class ChatResponse(BaseModel):
 app = FastAPI()
 guardian_model = None
 
-# Correctly mount the static directory which is inside 'src'
+# --- Add CORS Middleware ---
+# This allows the browser to communicate with the backend.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allows all origins
+    allow_credentials=True,
+    allow_methods=["*"], # Allows all methods
+    allow_headers=["*"], # Allows all headers
+)
+
+# Serve the static files (HTML, CSS, JS)
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
 
@@ -35,7 +46,7 @@ def load_model():
 
 @app.get("/", response_class=FileResponse)
 async def read_index():
-    """Serve the main HTML page from its correct location."""
+    """Serve the main HTML page."""
     return "src/static/index.html"
 
 @app.post("/chat", response_model=ChatResponse)
