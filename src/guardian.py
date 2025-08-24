@@ -5,7 +5,7 @@ import importlib.util
 
 class EthicalGuardian:
     def __init__(self, adapter_path, config_path, prompt_path):
-        self.version = "1.2-stable"
+        self.version = "1.3-stable"
         
         # Load config from file
         with open(config_path, 'r') as f:
@@ -26,20 +26,23 @@ class EthicalGuardian:
         )
         print("Pipeline initialized.")
 
-    # This 'def' must be indented to be part of the class
     def evaluate(self, test_case: dict) -> dict:
         prompt = self.get_prompt_template(test_case)
         raw_output = self.generator(
             prompt,
-            max_new_tokens=350,      # Increased token limit
+            max_new_tokens=350,
             do_sample=True,
-            temperature=0.7          # Increased temperature for creativity
+            temperature=0.7
         )
         
         try:
             model_response_str = raw_output[0]['generated_text'].split('```json')[-1].strip()
             if model_response_str.endswith("```"):
                 model_response_str = model_response_str[:-3].strip()
+            
+            # This new line fixes the single vs. double quote issue.
+            model_response_str = model_response_str.replace("'", '"')
+
             parsed_json = json.loads(model_response_str)
             return parsed_json
         except Exception as e:
