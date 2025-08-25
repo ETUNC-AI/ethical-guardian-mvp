@@ -2,10 +2,9 @@ version: '3.8'
 services:
   guardian:
     build: .
+    network_mode: "host" # This is the new, critical line
     volumes:
       - ./src:/app/src
-    ports:
-      - "8000:8000"
     environment:
       - HF_TOKEN=${HF_TOKEN}
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000
