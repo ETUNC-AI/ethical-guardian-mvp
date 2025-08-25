@@ -5,7 +5,7 @@ import importlib.util
 
 class EthicalGuardian:
     def __init__(self, adapter_path, config_path, prompt_path):
-        self.version = "1.4-robust-parser"
+        self.version = "1.5-stable"
         
         # Load config from file
         with open(config_path, 'r') as f:
@@ -36,14 +36,13 @@ class EthicalGuardian:
         )
         
         try:
-            # New robust parsing logic: find the first '{' and the last '}'
+            # Robust parsing logic
             raw_text = raw_output[0]['generated_text']
             start_index = raw_text.find('{')
             end_index = raw_text.rfind('}') + 1
             
             if start_index != -1 and end_index != 0:
                 json_str = raw_text[start_index:end_index]
-                # Replace single quotes just in case
                 json_str = json_str.replace("'", '"')
                 parsed_json = json.loads(json_str)
                 return parsed_json
@@ -51,3 +50,8 @@ class EthicalGuardian:
                 raise ValueError("No valid JSON object found in the model's output.")
 
         except Exception as e:
+            # This block is now correctly indented
+            return {
+                "reasoning_trace": ["FATAL_PARSING_ERROR"],
+                "guardian_output": f"Model failed to produce valid JSON. Error: {e}. Raw: {raw_output[0]['generated_text']}"
+            }
