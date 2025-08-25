@@ -2,9 +2,16 @@ version: '3.8'
 services:
   guardian:
     build: .
-    network_mode: "host" # This is the new, critical line
+    network_mode: "host"
     volumes:
       - ./src:/app/src
     environment:
       - HF_TOKEN=${HF_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     command: uvicorn src.main:app --host 0.0.0.0 --port 8000
