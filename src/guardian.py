@@ -5,7 +5,7 @@ import importlib.util
 
 class EthicalGuardian:
     def __init__(self, adapter_path, config_path, prompt_path):
-        self.version = "1.3-stable"
+        self.version = "1.4-robust-parser"
         
         # Load config from file
         with open(config_path, 'r') as f:
@@ -36,17 +36,18 @@ class EthicalGuardian:
         )
         
         try:
-            model_response_str = raw_output[0]['generated_text'].split('```json')[-1].strip()
-            if model_response_str.endswith("```"):
-                model_response_str = model_response_str[:-3].strip()
+            # New robust parsing logic: find the first '{' and the last '}'
+            raw_text = raw_output[0]['generated_text']
+            start_index = raw_text.find('{')
+            end_index = raw_text.rfind('}') + 1
             
-            # This new line fixes the single vs. double quote issue.
-            model_response_str = model_response_str.replace("'", '"')
+            if start_index != -1 and end_index != 0:
+                json_str = raw_text[start_index:end_index]
+                # Replace single quotes just in case
+                json_str = json_str.replace("'", '"')
+                parsed_json = json.loads(json_str)
+                return parsed_json
+            else:
+                raise ValueError("No valid JSON object found in the model's output.")
 
-            parsed_json = json.loads(model_response_str)
-            return parsed_json
         except Exception as e:
-            return {
-                "reasoning_trace": ["FATAL_PARSING_ERROR"],
-                "guardian_output": f"Model failed to produce valid JSON. Error: {e}. Raw: {raw_output[0]['generated_text']}"
-            }
