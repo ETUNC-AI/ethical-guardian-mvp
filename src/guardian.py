@@ -18,10 +18,11 @@ class EthicalGuardian:
 
         print("Initializing model pipeline with 8-bit quantization...")
 
+        # This pipeline call now includes the model_kwargs to load in 8-bit mode
         self.generator = pipeline(
             "text-generation",
             model=model_id,
-            model_kwargs={"load_in_8bit": True},
+            model_kwargs={"load_in_8bit": True}, # <-- This is the key change
             device_map="auto"
         )
 
