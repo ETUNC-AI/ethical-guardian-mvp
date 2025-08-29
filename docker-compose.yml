@@ -1,12 +1,16 @@
-version: '3.8'
 services:
   guardian:
     build: .
-    runtime: nvidia
     ports:
       - "8000:8000"
     volumes:
       - .:/app
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
       - HF_TOKEN=${HF_TOKEN}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
