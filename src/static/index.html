@@ -3,20 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethical Guardian - Prototype</title>
+    <title>Guardian Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div id="chat-container">
-        <h1>Ethical Guardian v1.0</h1>
-        <div id="chat-box">
-            <div class="message guardian-message">
-                <p>I am the Ethical Guardian. How can I help you analyze a situation?</p>
+    <div id="app-container">
+        <h1>Guardian Analysis Dashboard</h1>
+        <div id="main-content">
+            <div id="dashboard-view">
+                <div class="toolbar">
+                    <button id="analyze-new-btn">Analyze New Document(s)</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Document Name</th>
+                                <th>Upload Date</th>
+                                <th>Status</th>
+                                <th>Key Principles Identified</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            </tbody>
+                    </table>
+                    <p id="no-docs-message" class="hidden">No documents analyzed yet.</p>
+                </div>
             </div>
-        </div>
-        <div id="input-area">
-            <input type="text" id="message-input" placeholder="Ask about an ethical dilemma...">
-            <button id="send-button">Send</button>
+            <div id="upload-view" class="hidden">
+                <h2>Upload Documents for Analysis</h2>
+                <div id="drop-area">
+                    <p>Drag & drop files here or click to select files</p>
+                    <input type="file" id="file-input" multiple hidden>
+                </div>
+                <div id="upload-queue"></div>
+                <button id="back-to-dashboard-btn">Back to Dashboard</button>
+            </div>
+             <div id="report-view" class="hidden">
+                </div>
         </div>
     </div>
     <script src="/static/script.js"></script>
