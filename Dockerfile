@@ -1,5 +1,4 @@
 # Use an official NVIDIA CUDA image with Python as the base.
-# This includes all the necessary GPU libraries inside the container.
 FROM nvidia/cuda:12.1.1-runtime-ubuntu22.04
 
 # Install Python and set up the application environment
