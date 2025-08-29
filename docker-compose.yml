@@ -1,10 +1,10 @@
-version: '3.8'
 services:
   guardian:
     build: .
-    network_mode: "host"
+    ports:
+      - "8000:8000"
     volumes:
-      - ./src:/app/src
+      - .:/app
     environment:
       - HF_TOKEN=${HF_TOKEN}
     deploy:
@@ -12,6 +12,5 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
-    command: uvicorn src.main:app --host 0.0.0.0 --port 8000
