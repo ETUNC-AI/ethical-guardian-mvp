@@ -6,7 +6,7 @@ from contextlib import asynccontextmanager
 
 class EthicalGuardian:
     def __init__(self, adapter_path, config_path, prompt_path):
-        self.version = "2.1-quantized"
+        self.version = "2.2-stable"
         with open(config_path, 'r') as f:
             config = json.load(f)
         model_id = config["model_id"]
@@ -18,11 +18,10 @@ class EthicalGuardian:
 
         print("Initializing model pipeline with 8-bit quantization...")
 
-        # This pipeline call now includes the model_kwargs to load in 8-bit mode
         self.generator = pipeline(
             "text-generation",
             model=model_id,
-            model_kwargs={"load_in_8bit": True}, # <-- This is the key change
+            model_kwargs={"load_in_8bit": True},
             device_map="auto"
         )
 
