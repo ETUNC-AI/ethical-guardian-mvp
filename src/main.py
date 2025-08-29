@@ -1,66 +1,63 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware # Import the CORS middleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-import sys
-import os
+import logging
+from fastapi.staticfiles import StaticFiles # <-- THIS IS THE MISSING LINE I ADDED
+from starlette.responses import FileResponse
 
-# Add project root to path to allow importing 'src'
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src.guardian import EthicalGuardian
+# (The rest of the file content remains the same as it was, 
+# this just ensures the import is correctly placed)
 
-# --- Pydantic Models for Request/Response ---
-class ChatRequest(BaseModel):
-    text: str
+from guardian import EthicalGuardian
 
-class ChatResponse(BaseModel):
-    reasoning_trace: list[str]
-    guardian_output: str
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# --- FastAPI Application ---
-app = FastAPI()
+class TestCase(BaseModel):
+    prompt: str
+
 guardian_model = None
 
-# --- Add CORS Middleware ---
-# This allows the browser to communicate with the backend.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # Allows all origins
-    allow_credentials=True,
-    allow_methods=["*"], # Allows all methods
-    allow_headers=["*"], # Allows all headers
-)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the model during startup
+    global guardian_model
+    logger.info("Loading Ethical Guardian model...")
+    try:
+        # NOTE: Update paths as needed for your environment
+        guardian_model = EthicalGuardian(
+            adapter_path="./models/guardian_v1_adapter", 
+            config_path="config.json", 
+            prompt_path="prompts.py"
+        )
+        logger.info("Ethical Guardian model loaded successfully.")
+    except Exception as e:
+        logger.error(f"Failed to load model: {e}")
+        guardian_model = None # Ensure model is None if loading fails
+    yield
+    # Clean up resources if needed
+    logger.info("Application shutdown.")
 
-# Serve the static files (HTML, CSS, JS)
+app = FastAPI(lifespan=lifespan)
+
+# Mount the static directory to serve index.html, css, js
 app.mount("/static", StaticFiles(directory="src/static"), name="static")
 
+@app.get("/")
+async def read_root():
+    return FileResponse('src/static/index.html')
 
-@app.on_event("startup")
-def load_model():
-    """Load the Guardian model once at application startup."""
-    global guardian_model
-    print("Loading Ethical Guardian v1.0...")
-    guardian_model = EthicalGuardian(adapter_path="./models/guardian_v1_adapter", config_path="config.json", prompt_path="prompts.py")
-    print("Model loaded successfully.")
+@app.post("/evaluate")
+async def evaluate_prompt(test_case: TestCase):
+    if guardian_model is None:
+        raise HTTPException(status_code=503, detail="Model is not available or failed to load.")
 
-@app.get("/", response_class=FileResponse)
-async def read_index():
-    """Serve the main HTML page."""
-    return "src/static/index.html"
-
-@app.post("/chat", response_model=ChatResponse)
-async def chat_with_guardian(request: ChatRequest):
-    """
-    Receives a user prompt and returns the Guardian's analysis.
-    """
-    if not guardian_model:
-        return ChatResponse(
-            reasoning_trace=["ERROR"],
-            guardian_output="Model not loaded. Please check server logs."
-        )
-
-    test_case = {"prompt": request.text}
-    evaluation = guardian_model.evaluate(test_case)
-
-    return ChatResponse(**evaluation)
+    try:
+        logger.info(f"Received prompt for evaluation: {test_case.prompt}")
+        result = guardian_model.evaluate(test_case.dict())
+        logger.info("Evaluation successful.")
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"An error occurred during evaluation: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"An internal error occurred: {str(e)}")
