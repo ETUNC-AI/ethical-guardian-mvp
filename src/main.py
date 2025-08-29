@@ -2,13 +2,12 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import logging
-from fastapi.staticfiles import StaticFiles # <-- THIS IS THE MISSING LINE I ADDED
+from fastapi.staticfiles import StaticFiles
 from starlette.responses import FileResponse
+from contextlib import asynccontextmanager
 
-# (The rest of the file content remains the same as it was, 
-# this just ensures the import is correctly placed)
-
-from guardian import EthicalGuardian
+# This is the single-character fix: a '.' was added before 'guardian'
+from .guardian import EthicalGuardian 
 
 # Setup logging
 logging.basicConfig(level=logging.INFO)
